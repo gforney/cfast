@@ -88,17 +88,21 @@ module fire_routines
 
         mdot_pyrolysis_burned   = fireptr%mdot_plume     - fireptr%mdot_entrained
         mdot_pyrolysis_unburned = fireptr%mdot_pyrolysis - mdot_pyrolysis_burned
-        q_firemass = cp*fireptr%mdot_pyrolysis*interior_ambient_temperature
-        q_entrained = cp*fireptr%mdot_entrained*t_lower
+        q_firemass              = cp*mdot_pyrolysis_unburned*interior_ambient_temperature
+        q_entrained             = cp*fireptr%mdot_entrained*t_lower
 
   ! mdot_plume contains pyrolysis_burned (not pyrolysis_unburned) and entrainment components
-  ! since q_firemass is defined using mdot_pyrolysis which consists of both burned and unburned yrolysis components
-  ! an unburned component of pyrolysis needs to be added to flows_fires(iroom,m,u)
-  ! this is only an issue when fires are oxygen limited
+  ! q_firemass uses only the unburned pyrolysis component since the burned pyrolysis
+  ! component is used when computing hrr_c - otherwise it would be counted twice.
+  ! also without this change, a user would not obtain the hrr value they specified in the input file
+
+  !  fireptr%mdot_entrained is included in fireptr@mdot_plume
         flows_fires(iroom,m,u) = flows_fires(iroom,m,u) + fireptr%mdot_plume + mdot_pyrolysis_unburned
         flows_fires(iroom,m,l) = flows_fires(iroom,m,l) - fireptr%mdot_entrained
-        flows_fires(iroom,q,u) = flows_fires(iroom,q,u) + hrr_c + q_firemass + q_entrained
-        flows_fires(iroom,q,l) = flows_fires(iroom,q,l) - q_entrained
+
+        flows_fires(iroom,q,u) = flows_fires(iroom,q,u) + hrr_c + q_entrained + q_firemass
+        flows_fires(iroom,q,l) = flows_fires(iroom,q,l)         - q_entrained
+
         flows_fires(iroom,3:ns+2,u) = flows_fires(iroom,3:ns+2,u) + species_mass_rate(u,1:ns)
         flows_fires(iroom,3:ns+2,l) = flows_fires(iroom,3:ns+2,l) + species_mass_rate(l,1:ns)
     end do
