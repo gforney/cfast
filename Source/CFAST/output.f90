@@ -30,6 +30,7 @@ module output_routines
     use material_data, only: n_matl, material_info
     use vent_data, only: n_hvents, hventinfo, n_vvents, vventinfo, n_mvents, mventinfo, n_leaks, leakinfo
     use dump_data, only: n_dumps, dumpinfo, iocsv, iocsv_walls, iocsv_compartments, iocsv_vents, iocsv_masses, iocsv_devices
+    use iso_fortran_env, only: compiler_version
 
     implicit none
     external grabky, get_info
@@ -70,6 +71,7 @@ module output_routines
     write (iunit,'(a,1x,a,1x,i0,".",i0,".",i0)')     TRIM(VERSION_PP),program_name,imajor, iminor, iminorrev
     write (iunit,'(A,A)')                    'Revision         : ',TRIM(revision)
     write (iunit,'(A,A)')                    'Revision Date    : ',TRIM(revision_date)
+    write (iunit,'(A,A)')                    'Compiler         : ',TRIM(COMPILER_VERSION())
     write (iunit,'(A,A/)')                   'Compilation Date : ',TRIM(compile_date)
     return
 
